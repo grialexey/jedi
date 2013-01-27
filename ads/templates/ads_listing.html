@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+
+
+{% block extrascripts %}
+    <script src="{{ STATIC_URL }}js/libs/jquery-1.8.0.min.js"></script>
+    <script src="{{ STATIC_URL }}js/libs/moment/moment.min.js"></script>
+    <script src="{{ STATIC_URL }}js/libs/moment/lang/ru.js"></script>
+    <script src="{{ STATIC_URL }}js/libs/json2.min.js"></script>
+    <script src="{{ STATIC_URL }}js/libs/underscore-min.js"></script>
+    <script src="{{ STATIC_URL }}js/libs/backbone-min.js"></script>
+    <script>
+        moment.lang('ru');
+        moment.relativeTime.s = "минуту";
+        moment.calendar = {
+            lastDay : 'Вчера в LT',
+            sameDay : 'Сегодня в LT',
+            nextDay : 'Завтра в LT',
+            lastWeek : 'L',
+            nextWeek : 'L',
+            sameElse : 'L'
+        };
+
+
+        var AdModel = Backbone.Model.extend({
+
+        });
+
+        var AdsCollection = Backbone.Collection.extend({
+
+            model: AdModel,
+
+            url: '/getjson/',
+
+            comparator: function(ad) {
+                var added = new Date(ad.get("added"));
+                return -added;
+            }
+
+        });
+
+        var SearchWidget = Backbone.View.extend({
+
+            id: "search-block",
+
+            initialize: function() {
+                this.template = _.template($('#searchtemplate').html());
+                this.$el.append( this.template()).appendTo('header');
+{#                $('header').append(this.el);#}
+            },
+
+            events: {
+                "keyup #search-input": "searchEventHandler",
+                "submit #search-form": "searchEventHandler"
+            },
+
+            searchEventHandler: function(event) {
+                event.preventDefault();
+                var query = $(this.el).find(".input").val();
+                this.search(query);
+            },
+
+            search: function( query ) {
+                query = query.trim();
+                if (query) {
+                    this.collection.fetch({ data: { q: query } });
+                    var encoded_query = encodeURIComponent(query).replace(/%20/g, "+");
+                    window.router.navigate("/?q=" + encoded_query, { trigger: false });
+                }
+                else {
+                    this.collection.fetch();
+                    window.router.navigate("/", { tigger: false });
+                }
+                return this;
+            },
+
+            render: function(query) {
+                $(this.el).find(".input").val(query);
+                return this;
+            }
+
+        });
+
+        var AdsWidget = Backbone.View.extend({
+
+            el: '#ads-section',
+
+            initialize: function() {
+                this.template = _.template($('#adtemplate').html());
+                this.collection.on("reset", this.render, this);
+                this.date_format_from_now = true;
+
+{#                _.bindAll(this, 'checkScroll');#}
+                // bind to window
+{#                $(window).scroll(this.checkScroll);#}
+            },
+
+            events: {
+                "click .ad .info": "toggleDescription",
+                "click .ad .date .time": "toggleDateTimeFormat",
+            },
+
+            checkScroll: function () {
+                var triggerPoint = 300; // 100px from the bottom
+                if ($(document).height() - $(window).height() - $(document).scrollTop() < triggerPoint) {
+                    this.collection.fetch();
+                }
+            },
+
+            render: function() {
+                var that = this;
+                $(that.el).empty();
+                if ( this.collection.isEmpty() ) {
+                    $("<div class='ad'>").addClass("nothingfound").text("К сожалению, ничего не найдено").appendTo($(that.el));
+                }
+                else {
+                    this.collection.each(function(model) {
+                        var renderedAd = that.template({ ad: model.toJSON(), date_format_from_now: that.date_format_from_now });
+                        $(that.el).append(renderedAd);
+
+                    });
+                }
+                return this;
+            },
+
+            toggleDescription: function(event) {
+                event.preventDefault();
+                $(event.currentTarget).siblings(".description").slideToggle(200);
+                console.log(event.currentTarget);
+            },
+
+            toggleDateTimeFormat: function(event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                $(this.el).find(".ad .date .timefrom").toggle();
+                $(this.el).find(".ad .date .timecalendar").toggle();
+                this.date_format_from_now = !this.date_format_from_now;
+            },
+
+            revealImages: function() {
+
+            }
+        });
+
+        var Router = Backbone.Router.extend({
+
+            routes: {
+                "": "search",
+{#                "?:params": "search"#}
+            },
+
+            search: function(query_string) {
+                alert('hello');
+                if (query_string) {
+                    var query = decodeURIComponent(query_string.replace(/\+/g, "%20"));
+                }
+                this.search_widget.search(query);
+            }
+
+        });
+
+
+        $(document).ready(function() {
+            var sell_ads = new AdsCollection();
+            var ads_widget = new AdsWidget({ collection: sell_ads});
+            var search_widget = new SearchWidget({ collection: sell_ads});
+            window.router = new Router({ search_widget: search_widget });
+            sell_ads.reset();
+            Backbone.history.start({ pushState: true, silent: true });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <section class="ads section" id="ads-section"></section>
+
+
+    <script id="adtemplate" type="text/x-underscore-template">
+        <article class="ad">
+            <a href="http://jediru.net/viewtopic.php?id=<%= ad.id %>" class="info">
+                <h1 class="name"><%= ad.title %></h1><div class="price">&nbsp;<% if (ad.price) { %><span class="value"><%= ad.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") %></span> руб<% } %></div><div class="date"><span class="time timefrom <% if (!date_format_from_now) { print('hide'); } %>"><%= moment(ad.added).from(new Date()) %></span> <span class="time timecalendar <% if (date_format_from_now) { print('hide'); } %>"><%= moment(ad.added).calendar(new Date()) %></span></div>
+            </a>
+            <div class="description hide">
+                <div class="text">
+                    <%= ad.description.replace(/\n/g, '<br />') %>
+                    <br><a class="forumlink" href="http://jediru.net/viewtopic.php?id=<%= ad.id %>">Ссылка на тему</a>
+                </div>
+            </div>
+        </article>
+    </script>
+
+    <script id="searchtemplate" type="text/x-underscore-template">
+        <form id="search-form" class="search" action="/" method="get">
+            <input tabindex="1" type="text" name="q" id="search-input" class="input" autofocus="autofocus" autocomplete="off" value="{{ query }}">
+        </form>
+    </script>
+
+
+
+{% endblock %}

@@ -1,0 +1,9 @@
+<hgroup class="info clearfix">
+    <h1 class="name"><%= ad.title %></h1><div class="price">&nbsp;<% if (ad.price) { %><span class="value"><%= ad.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") %></span> руб<% } %></div><div class="date"><span class="time"></span></div>
+</hgroup>
+<div class="description <% if (!opened) { print('hide'); } %>">
+    <div class="text">
+        <%= ad.description.replace(/\n/g, '<br />') %>
+        <br><a class="forumlink" href="http://jediru.net/viewtopic.php?id=<%= ad.id %>">Ссылка на тему</a>
+    </div>
+</div>

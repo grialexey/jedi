@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+
+
+{% block extrascripts %}
+    <script>var bootstrap = {{ bootstrap|safe }};</script>
+    {% if debug %}
+        <script data-main="{{ STATIC_URL }}js/main" src="{{ STATIC_URL }}js/libs/require/require.js"></script>
+    {% else %}
+        <script data-main="{{ STATIC_URL }}build/main-built.js" src="{{ STATIC_URL }}js/libs/require/require.js"></script>
+    {% endif %}
+{% endblock %}

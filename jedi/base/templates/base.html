@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width; height=device-height; initial-scale=1.0; {# maximum-scale=1.0; user-scalable=0 #}">
+    <title>{% block pagetitle %}{% if page_title %}{{ page_title }}. {% endif %}{% endblock %}Джедайская барахолка</title>
+{#    <link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon.ico" type="image/x-icon" />#}
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/reset.css" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/hacks.css" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/global.css" />
+
+    {% block extrastyles %}{% endblock %}
+    {% block extrascripts %}{% endblock %}
+    {% block extrahead %}{% endblock %}
+</head>
+<body>
+    <div id="wrapper">
+        <header id="header">
+            <h1 class="site-title"><a href="/">Джедайская барахолка</a></h1>
+        </header>
+
+        <div id="content">
+            {% block content %}
+
+            {% endblock %}
+        </div>
+
+        <footer class="footer">
+        </footer>
+    </div>
+
+    {% if not debug %}
+        {% comment %} Analytics {% endcomment %}
+        <!-- Yandex.Metrika counter -->
+        <script type="text/javascript">
+            (function (d, w, c) {
+                (w[c] = w[c] || []).push(function() {
+                    try {
+                        w.yaCounter19631896 = new Ya.Metrika({id:19631896,
+                            clickmap:true,
+                            trackLinks:true,
+                            accurateTrackBounce:true});
+                    } catch(e) { }
+                });
+
+                var n = d.getElementsByTagName("script")[0],
+                        s = d.createElement("script"),
+                        f = function () { n.parentNode.insertBefore(s, n); };
+                s.type = "text/javascript";
+                s.async = true;
+                s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+                if (w.opera == "[object Opera]") {
+                    d.addEventListener("DOMContentLoaded", f, false);
+                } else { f(); }
+            })(document, window, "yandex_metrika_callbacks");
+        </script>
+        <noscript><div><img src="//mc.yandex.ru/watch/19631896" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+        <!-- /Yandex.Metrika counter -->
+    {% endif %}
+</body>
+</html>

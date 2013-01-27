@@ -1,0 +1,14 @@
+{% load ads_formatting %}
+
+
+<article class="ad">
+    <a href="http://jediru.net/viewtopic.php?id={{ ad.id }}" class="info">
+        <h1 class="name">{{ ad.title }}</h1><div class="price"><span class="value">{{ ad.price }}</span> руб</div><div class="date"><time class="time" datetime="{{ ad.added.isoformat }}">{{ ad.added|format_date }}</time></div>
+    </a>
+    <div class="description">
+        <div class="text">
+            {{ ad.description|linebreaksbr }}
+            <br><a class="forumlink" href="http://jediru.net/viewtopic.php?id={{ ad.id }}">Перейти на форум</a>
+        </div>
+    </div>
+</article>
