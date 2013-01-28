@@ -14,22 +14,29 @@ define(
             template: _.template(searchWidgetTemplate),
 
             events: {
-                "keyup #search-input": "search",
-                "submit #search-form": "search"
+                "keyup #search-input": "searchEventHandler",
+                "submit #search-form": "searchEventHandler"
             },
 
             initialize: function() {
+                this.debounced_search = _.debounce(this.search, 750);
                 this.collection.on("reset", function() {
                     this.$el.removeClass("loading");
                 }, this);
-                this.collection.on("search", function() {
-                    this.$el.addClass("loading");
-                }, this);
             },
 
-            search: function(event) {
+            searchEventHandler: function(event) {
                 event.preventDefault();
-                this.router.navigate(this.getQuery(), {trigger: true});
+                var query = this.$el.find(".input").val().trim();
+                if (query != this.collection.query) {
+                    this.router.navigate(query, {trigger: false});
+                    this.lazySearch(query);
+                }
+            },
+
+            lazySearch: function(query) {
+                this.$el.addClass("loading");
+                this.debounced_search(query);
             },
 
             render: function(query) {
@@ -41,11 +48,11 @@ define(
                 this.$el.find(".input").val(query);
             },
 
-            getQuery: function() {
-                var query = this.$el.find(".input").val().trim();
-//                var encoded_query = encodeURIComponent(query).replace(/%20/g, "+");
-                return query
+            search: function(query) {
+                this.collection.query = query;
+                this.collection.fetch();
             }
+
 
         });
 

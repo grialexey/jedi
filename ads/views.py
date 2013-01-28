@@ -32,13 +32,23 @@ def get_ads_json(query=None, from_date=None):
     ADS_TO_LOAD = 32
 
     ads = Ad.objects.all()
-
-    if query:
-        query = query.lower().strip()
-        ads = ads.filter(title__icontains=query)
+    categorized = False
 
     if from_date:
         ads = ads.filter(added__lt=from_date)
+
+    if query:
+        query = query.strip()
+        if u"продажа" in query.lower():
+            shorted_query = query.lower().replace(u"продажа", u"").strip()
+            ads = ads.filter(category=Ad.SELL, title__icontains=shorted_query)
+            categorized = True
+        elif u"купят" in query.lower():
+            shorted_query = query.lower().replace(u"купят", u"").strip()
+            ads = ads.filter(category=Ad.BUY, title__icontains=shorted_query)
+            categorized = True
+        else:
+            ads = ads.filter(title__icontains=query)
 
     latest_ad = None
     if ads:
@@ -50,7 +60,7 @@ def get_ads_json(query=None, from_date=None):
             'ads':
                 [
                     {
-                    'title': o.title,
+                    'title': o.short_title if categorized else o.title,
                     'id': o.id,
                     'price': o.price,
                     'added': o.added.isoformat(),

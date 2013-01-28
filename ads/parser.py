@@ -214,7 +214,7 @@ def get_short_title(theme_title, category):
         short_theme_title = buy_pattern.sub("", theme_title)
     else:
         short_theme_title = theme_title
-    return short_theme_title.strip().capitalize()
+    return short_theme_title
 
 
 

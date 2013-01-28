@@ -29,24 +29,26 @@ define(
 
             checkScroll: function () {
                 var triggerPoint = 300;
-                if (($(window).scrollTop() + $(window).height() >= $(document).height() - triggerPoint) && !this.isLoading && !this.collection.ended) {
+                if (($(window).scrollTop() + $(window).height() >= $(document).height() - triggerPoint) && !this.collection.ended) {
                     this.loadMore();
                 }
             },
 
             loadMore: function() {
-                this.isLoading = true;
-                var $loading = this.renderLoading();
-                var that = this;
-                this.collection.fetch({
-                    update: true,
-                    data: { from: that.collection.last().get("added") },
-                    remove: false,
-                    success: function(ads, response) {
-                        $loading.remove();
-                        that.isLoading = false;
-                    }
-                });
+                if (!this.isLoading) {
+                    this.isLoading = true;
+                    var $loading = this.renderLoading();
+                    var that = this;
+                    this.collection.fetch({
+                        update: true,
+                        data: { from: that.collection.last().get("added") },
+                        remove: false,
+                        success: function(ads, response) {
+                            $loading.remove();
+                            that.isLoading = false;
+                        }
+                    });
+                }
             },
 
             render: function() {
